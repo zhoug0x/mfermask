@@ -1,0 +1,6 @@
+#output-canvas {
+	border: 5px solid black;
+
+	/* flip selfie mirror */
+	transform: rotateY(180deg);
+}
