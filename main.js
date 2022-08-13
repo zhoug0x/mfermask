@@ -1,4 +1,5 @@
 const FACE_DETECT_THRESHOLD = 0.8
+const debugDisplay = document.querySelector('#debug-display')
 
 function main() {
 	let _canvasHelper
@@ -13,7 +14,7 @@ function main() {
 	// https://github.com/jeeliz/jeelizFaceFilter#optional-init-arguments
 	JEELIZFACEFILTER.init({
 		canvasId: 'output-canvas',
-		NNCPath: './jeeliz/', // root directory containing NN_DEFAULT.json neural network model
+		NNCPath: './jeeliz/NN_4EXPR_1.json', // path to the neural network model json
 		animateDelay: 1,
 
 		// runs on initialization
@@ -32,14 +33,20 @@ function main() {
 			const canvasHelper = getCanvasHelper()
 			// if face detected in the frame
 			if (detectState.detected > FACE_DETECT_THRESHOLD) {
-				// probability if mouth open or not - num between 0 & 1
-				// console.log(detectState.expressions)
-
 				const { getCoordinates, ctx, canvas, update_canvasTexture } =
 					canvasHelper
 
 				// get coordinates of face on screen
 				const faceCoords = getCoordinates(detectState)
+
+				const expr = detectState.expressions
+				const mouthOpen = expr[0]
+				const mouthSmile = expr[1]
+				const eyebrowFrown = expr[2]
+				const eyebrowRaised = expr[3]
+
+				// TODO: use expressions
+				console.log({ mouthOpen, mouthSmile, eyebrowFrown, eyebrowRaised })
 
 				// build thing to put on the face
 				ctx.strokeStyle = 'cyan'
@@ -49,6 +56,7 @@ function main() {
 				// flag the canvas helper to trigger a canvas update on the next draw()
 				update_canvasTexture()
 			}
+
 			canvasHelper.draw()
 		},
 	})
