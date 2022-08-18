@@ -2,7 +2,7 @@
 	width: 100%;
 	min-height: 100vh;
 	display: flex;
-	justify-content: center;
+	/* justify-content: center; */
 }
 
 #output-canvas {
@@ -10,4 +10,8 @@
 
 	/* flip selfie mirror */
 	transform: rotateY(180deg);
+}
+
+#debug-display {
+	font-size: 1.5rem;
 }
