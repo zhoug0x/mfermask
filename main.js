@@ -47,7 +47,16 @@ function main() {
 				ctx.strokeRect(faceCoords.x, faceCoords.y, faceCoords.w, faceCoords.h)
 			}
 
-			ctx.drawImage(el_HeadImg, faceCoords.x, faceCoords.y, faceCoords.w * 2, faceCoords.h * 2)
+			const locationArgs = [
+				// my cat walked across the keyboard and wrote this (commiting it, for the culture):
+				// yuhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhu7y6666666666666666666666666666666666666666666666666666666
+				faceCoords.x,
+				faceCoords.y,
+				faceCoords.w * 2,
+				faceCoords.h * 2,
+			]
+
+			ctx.drawImage(el_HeadImg, ...locationArgs)
 
 			// flag the `canvasHelper` to trigger a canvas update on the next `canvasHelper.draw()`
 			update_canvasTexture()
