@@ -1,16 +1,13 @@
-const DEBUG_MODE = true
-const FACE_DETECT_THRESHOLD = 0.8
 const el_HeadImg = document.querySelector('#head-img')
 const el_DebugDisplay = document.querySelector('#debug-display')
 
-const displayDebugData = data => {
-	el_DebugDisplay.innerText = JSON.stringify(data, null, 2)
-}
+const DEBUG_MODE = true
+const FACE_DETECT_THRESHOLD = 0.8
 
 function main() {
 	let canvasHelper
 
-	// runs on initialization
+	// runs on facefilter initialization
 	const callbackReady = (error, spec) => {
 		if (error) {
 			console.error(error)
@@ -21,7 +18,7 @@ function main() {
 		console.log('ready!')
 	}
 
-	// runs each draw loop iteration
+	// runs on each facefilter draw loop iteration
 	const callbackTrack = detectState => {
 		// if face detected in the frame
 		if (detectState.detected > FACE_DETECT_THRESHOLD) {
@@ -30,33 +27,31 @@ function main() {
 			// get location of face on screen
 			const faceCoords = getCoordinates(detectState)
 
-			// parse detected facial expressions
-			const { expressions: expr } = detectState
-			const expressions = {
-				mouthOpen: expr[0],
-				mouthSmile: expr[1],
-				eyebrowFrown: expr[2],
-				eyebrowRaised: expr[3],
-			}
+			// TODO: incorporate expressions
+			// const { expressions: expr } = detectState
+			// const expressions = {
+			// 	mouthOpen: expr[0],
+			// 	mouthSmile: expr[1],
+			// 	eyebrowFrown: expr[2],
+			// 	eyebrowRaised: expr[3],
+			// }
 
-			if (DEBUG_MODE) {
-				displayDebugData({ faceCoords, expressions })
-
-				ctx.strokeStyle = 'yellow'
-				ctx.clearRect(0, 0, canvas.width, canvas.height)
-				ctx.strokeRect(faceCoords.x, faceCoords.y, faceCoords.w, faceCoords.h)
-			}
-
+			// draw image element on face location
 			const locationArgs = [
-				// my cat walked across the keyboard and wrote this (commiting it, for the culture):
-				// yuhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhu7y6666666666666666666666666666666666666666666666666666666
 				faceCoords.x,
 				faceCoords.y,
-				faceCoords.w * 2,
-				faceCoords.h * 2,
+				faceCoords.w,
+				faceCoords.h,
 			]
 
+			ctx.clearRect(0, 0, canvas.width, canvas.height)
 			ctx.drawImage(el_HeadImg, ...locationArgs)
+
+			if (DEBUG_MODE) {
+				ctx.strokeStyle = 'yellow'
+				ctx.strokeRect(faceCoords.x, faceCoords.y, faceCoords.w, faceCoords.h)
+				el_DebugDisplay.innerText = JSON.stringify({ faceCoords }, null, 2)
+			}
 
 			// flag the `canvasHelper` to trigger a canvas update on the next `canvasHelper.draw()`
 			update_canvasTexture()
