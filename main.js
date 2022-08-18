@@ -1,8 +1,10 @@
 const el_HeadImg = document.querySelector('#head-img')
 const el_DebugDisplay = document.querySelector('#debug-display')
 
-const DEBUG_MODE = true
-const FACE_DETECT_THRESHOLD = 0.8
+const DEBUG_MODE = false
+const FACE_DETECT_THRESHOLD = 0.5
+const FACE_SIZE = 0.55
+const FACE_HEIGHT_OFFSET = 0.3
 
 function main() {
 	let canvasHelper
@@ -36,21 +38,27 @@ function main() {
 			// 	eyebrowRaised: expr[3],
 			// }
 
-			// draw image element on face location
-			const locationArgs = [
-				faceCoords.x,
-				faceCoords.y,
-				faceCoords.w,
-				faceCoords.h,
-			]
+			// calculate width/height offsets
+			let { width, height } = canvas
+			width = width * FACE_SIZE
+			height = height * FACE_SIZE
 
+			
+			const locationArgs = [
+				faceCoords.x - width * 0.5,
+				faceCoords.y - height * FACE_HEIGHT_OFFSET,
+				faceCoords.w + width,
+				faceCoords.h + height,
+			]
+			
+			// draw image element on face location
 			ctx.clearRect(0, 0, canvas.width, canvas.height)
 			ctx.drawImage(el_HeadImg, ...locationArgs)
 
 			if (DEBUG_MODE) {
 				ctx.strokeStyle = 'yellow'
-				ctx.strokeRect(faceCoords.x, faceCoords.y, faceCoords.w, faceCoords.h)
-				el_DebugDisplay.innerText = JSON.stringify({ faceCoords }, null, 2)
+				ctx.strokeRect(...locationArgs)
+				el_DebugDisplay.innerText = JSON.stringify({ locationArgs }, null, 2)
 			}
 
 			// flag the `canvasHelper` to trigger a canvas update on the next `canvasHelper.draw()`
