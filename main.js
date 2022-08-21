@@ -198,7 +198,7 @@ function init_scene(spec) {
 	CTX.strokeStyle = SETTINGS.strokeStyle
 	CTX.lineWidth = 4
 
-  // TODO: modify 'frame' stuff to fit mfer head img
+	// TODO: modify 'frame' stuff to fit mfer head img
 	const headImage = new Image()
 	headImage.src = 'images/plain-head.png'
 	headImage.onload = function () {
@@ -424,14 +424,14 @@ function update_canvasTexture() {
 function main() {
 	JEELIZFACEFILTER.init({
 		canvasId: 'output-canvas',
-		NNCPath: './jeeliz/NN_4EXPR_1.json',
+		NNCPath: './lib/NN_4EXPR_1.json',
 		callbackReady: function (errCode, spec) {
 			if (errCode) {
-				console.log('AN ERROR HAPPENS. SORRY BRO :( . ERR =', errCode)
+				console.error(errCode)
 				return
 			}
 
-			console.log('INFO: JEELIZFACEFILTER IS READY')
+			console.log('facefilter ready!')
 			init_scene(spec)
 			init_eventListeners()
 		}, //end callbackReady()
