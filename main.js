@@ -1,10 +1,8 @@
 // if enabled, box will display around face detection area and debug data will print in UI
-let DEBUG_MODE = false
+let DEBUG_MODE = true
 
 // magic numbers
 const FACE_DETECT_THRESHOLD = 0.5
-const FACE_SIZE = 0.55
-const FACE_HEIGHT_OFFSET = 0.35
 
 const el_HeadImg = document.querySelector('#head-img')
 const el_DebugDisplay = document.querySelector('#debug-display')
@@ -34,26 +32,18 @@ function main() {
 			// get location of face on screen
 			const faceCoords = getCoordinates(detectState)
 
-			// calculate width/height
-			let { width, height } = canvas
-			width = width * FACE_SIZE
-			height = height * FACE_SIZE
-
-			// apply width/height offsets to the detected face coordinates
 			const locationArgs = [
-				faceCoords.x - width * 0.5, // center the image on the face
-				faceCoords.y - height * FACE_HEIGHT_OFFSET, // adjust vertical placement
-
-				// TODO: the below two values determine the width/height based on the *distance* of the
-				//       face from the camera. unforunately, the way it is calculated below is not accurate
-				//       at extreme distances, since it's always the same static value being added to the dynamic `faceCoords`
-				faceCoords.w + width,
-				faceCoords.h + height,
+				faceCoords.x,
+				faceCoords.y,
+				faceCoords.w,
+				faceCoords.h,
 			]
 
-			// draw image element on face location
+			// clear previous draw
 			ctx.clearRect(0, 0, canvas.width, canvas.height)
-			ctx.drawImage(el_HeadImg, ...locationArgs)
+
+			// draw image element on face location
+			// ctx.drawImage(el_HeadImg, ...locationArgs)
 
 			if (DEBUG_MODE) {
 				ctx.strokeStyle = 'yellow'
