@@ -16,8 +16,8 @@ const SETTINGS = {
 	pivotOffsetYZ: [0.2, 0.2], // XYZ of the distance between the center of the cube and the pivot
 	detectionThreshold: 0.75, // sensibility, between 0 and 1. Less -> more sensitive
 	detectionHysteresis: 0.05,
-	scale: [1, 1.24], // scale of the 2D canvas along horizontal and vertical 2D axis
-	offsetYZ: [-0.1, -0.2], // offset of the 2D canvas along vertical and depth 3D axis
+	scale: [1.75, 1.75], // scale of the 2D canvas along horizontal and vertical 2D axis
+	offsetYZ: [-0.25, -0.2], // offset of the 2D canvas along vertical and depth 3D axis
 	canvasSizePx: 512, // resolution of the 2D canvas in pixels
 }
 
@@ -52,7 +52,7 @@ function detect_callback(isDetected) {
 	}
 }
 
-//BEGIN MATRIX ALGEBRA FUNCTIONS
+// ----------- BEGIN MATRIX ALGEBRA FUNCTIONS
 function create_mat4Identity() {
 	return [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]
 }
@@ -121,9 +121,9 @@ function multiply_matVec4(m, v) {
 function get_mat4Pos(m) {
 	return [m[12], m[13], m[14]]
 }
-//END MATRIX ALGEBRA FUNCTIONS
+// ----------- END MATRIX ALGEBRA FUNCTIONS
 
-//BEGIN WEBGL HELPERS
+// ------------------- BEGIN WEBGL HELPERS
 // compile a shader:
 function compile_shader(source, glType, typeString) {
 	const glShader = GL.createShader(glType)
@@ -178,7 +178,7 @@ function update_projMatrix() {
 	PROJMATRIXNEEDSUPDATE = false
 }
 
-//END WEBGL HELPERS
+// -------------------- END WEBGL HELPERS
 
 //build the 3D. called once when Jeeliz Face Filter is OK
 function init_scene(spec) {
@@ -198,7 +198,6 @@ function init_scene(spec) {
 	CTX.strokeStyle = SETTINGS.strokeStyle
 	CTX.lineWidth = 4
 
-	// TODO: modify 'frame' stuff to fit mfer head img
 	const headImage = new Image()
 	headImage.src = 'images/plain-head.png'
 	headImage.onload = function () {
@@ -328,94 +327,6 @@ function init_scene(spec) {
 	GL.disableVertexAttribArray(shpCanvas, SHADERCANVAS.uv)
 } //end init_scene()
 
-//BEGIN MOUSE/TOUCH EVENTS FUNCTIONS
-const MOUSESTATES = {
-	idle: 0,
-	drag: 1,
-}
-let MOUSESTATE = MOUSESTATES.idle,
-	OLDXY
-
-function init_eventListeners() {
-	// add touch and mouse event listeners:
-	CV.addEventListener('mousedown', onMouseDown, false)
-	CV.addEventListener('touchdown', onMouseDown, false)
-	CV.addEventListener('touchstart', onMouseDown, false) // for IOS
-
-	CV.addEventListener('mouseup', onMouseUp, false)
-	CV.addEventListener('touchup', onMouseUp, false)
-
-	CV.addEventListener('mousemove', onMouseMove, false)
-	CV.addEventListener('touchmove', onMouseMove, false)
-}
-
-function get_eventLoc(event) {
-	// return the position of the picked point in pixels in the canvas2D
-	// get cursor position in pixel in the HTML page ref:
-	const isTouch = event.touches && event.touches.length ? true : false
-	const xPx = isTouch ? event.touches[0].clientX : event.clientX
-	const yPx = isTouch ? event.touches[0].clientY : event.clientY
-
-	// convert it to viewport coordinates (between -1 and 1, Y up):
-	const canvasRect = CV.getBoundingClientRect()
-	let xvp = (xPx - canvasRect.left) / canvasRect.width // between 0 and 1
-	let yvp = (yPx - canvasRect.top) / canvasRect.height // between 0 and 1
-	xvp = -2 * xvp + 1 // inverse X too because it is inverted with CSS
-	yvp = -2 * yvp + 1 // between 0 and 1, inverted
-
-	// multiply if by the inverse of the projection matrix to get the vector in 3D in the camera ref:
-	const xc = (1 / PROJMATRIX[0]) * xvp
-	const yc = (1 / PROJMATRIX[5]) * yvp
-	const vc = [xc, yc, -1, 0]
-
-	// compute the inverse of the move matrix to pass this vector to the plane ref:
-	inverse_mat4MoveMatrix(MOVMATRIX, MOVMATRIXINV)
-	const vec = multiply_matVec4(MOVMATRIXINV, vc) //vector
-	const origin = get_mat4Pos(MOVMATRIXINV)
-
-	// compute the intersection between the ray (origin, vec) and the plane defined by Z=ZPLANE:
-	const k = (ZPLANE - origin[2]) / vec[2] // k so that origin+k*vec belongs to the plane
-	const xi = origin[0] + k * vec[0], // x of the intersection point
-		yi = origin[1] + k * vec[1] // y of the intersection point
-
-	// normalize xi and yi between [-1 and 1] according to the size of the canvas in the space:
-	const xin = xi / SETTINGS.scale[0]
-	const yin = (yi - YPLANE) / SETTINGS.scale[1]
-
-	// convert xin and yin to canvas pixel coordinates and re-invert Y axis:
-	const xCv = (CANVAS2D.width * (-xin + 1)) / 2
-	const yCv = (CANVAS2D.height * (-yin + 1)) / 2
-
-	return [xCv, yCv]
-} //end get_eventLoc()
-
-function onMouseDown(event) {
-	if (MOUSESTATE !== MOUSESTATES.idle || !ISDETECTED) return
-	MOUSESTATE = MOUSESTATES.drag
-	OLDXY = get_eventLoc(event)
-	CTX.beginPath()
-	CTX.moveTo(OLDXY[0], OLDXY[1])
-}
-function onMouseMove(event) {
-	if (MOUSESTATE !== MOUSESTATES.drag) return
-	if (!ISDETECTED) {
-		onMouseUp(event)
-		return
-	}
-	const xy = get_eventLoc(event)
-	CTX.lineTo(xy[0], xy[1])
-	CTX.stroke()
-	update_canvasTexture()
-	OLDXY = xy
-
-	event.preventDefault() // disable scroll or fancy stuffs
-}
-function onMouseUp(event) {
-	if (MOUSESTATE !== MOUSESTATES.drag) return
-	MOUSESTATE = MOUSESTATES.idle
-}
-//END MOUSE/TOUCH EVENTS FUNCTIONS
-
 function update_canvasTexture() {
 	CANVASTEXTURENEEDSUPDATE = true
 }
@@ -433,7 +344,6 @@ function main() {
 
 			console.log('facefilter ready!')
 			init_scene(spec)
-			init_eventListeners()
 		}, //end callbackReady()
 
 		// called at each render iteration (drawing loop):
