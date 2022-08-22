@@ -25,7 +25,13 @@ h5 {
 }
 
 .heading {
+	display: flex;
+	align-items: center;
 	margin-bottom: 1rem;
+}
+
+.heading h1 {
+	margin-right: 1rem;
 }
 
 #output-canvas {
