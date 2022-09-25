@@ -7,7 +7,7 @@ const SETTINGS = {
   detectionThreshold: 0.75, // AI sensitivity, between 0 and 1, less = more sensitive
   detectionHysteresis: 0.05,
   scale: [2.75, 2.75], // scale of the mfer img along horizontal and vertical 2D axis
-  offsetYZ: [0, -0.2], // offset of the mfer img along vertical and depth 3D axis
+  offsetYZ: [-0.1, -0.2], // offset of the mfer img along vertical and depth 3D axis
   canvasSizeResolution: 500, // 2D resolution quality of mfer img (in pixels)
 }
 
