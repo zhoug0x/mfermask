@@ -6,7 +6,7 @@ const SETTINGS = {
 	pivotOffsetYZ: [0.2, 0.2], // XYZ of the distance between the center of the mfer img and the pivot
 	detectionThreshold: 0.75, // AI sensitivity, between 0 and 1, less = more sensitive
 	detectionHysteresis: 0.05,
-	scale: [1.75, 1.75], // scale of the mfer img along horizontal and vertical 2D axis
+	scale: [2, 2], // scale of the mfer img along horizontal and vertical 2D axis
 	offsetYZ: [-0.25, -0.2], // offset of the mfer img along vertical and depth 3D axis
 	canvasSizeResolution: 500, // 2D resolution quality of mfer img (in pixels)
 }
