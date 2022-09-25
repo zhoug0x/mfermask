@@ -1,14 +1,14 @@
 // global settings
 const SETTINGS = {
-	strokeStyle: 'red',
+	headImgSrc: 'images/plain-head.png',
 	rotationOffsetX: 0, // negative -> look upper. in radians
 	cameraFOV: 40, // in degrees, 3D camera FOV
-	pivotOffsetYZ: [0.2, 0.2], // XYZ of the distance between the center of the cube and the pivot
-	detectionThreshold: 0.75, // sensibility, between 0 and 1. Less -> more sensitive
+	pivotOffsetYZ: [0.2, 0.2], // XYZ of the distance between the center of the mfer img and the pivot
+	detectionThreshold: 0.75, // AI sensitivity, between 0 and 1, less = more sensitive
 	detectionHysteresis: 0.05,
-	scale: [1.75, 1.75], // scale of the 2D canvas along horizontal and vertical 2D axis
-	offsetYZ: [-0.25, -0.2], // offset of the 2D canvas along vertical and depth 3D axis
-	canvasSizePx: 500, // resolution of the 2D canvas in pixels
+	scale: [1.75, 1.75], // scale of the mfer img along horizontal and vertical 2D axis
+	offsetYZ: [-0.25, -0.2], // offset of the mfer img along vertical and depth 3D axis
+	canvasSizeResolution: 500, // 2D resolution quality of mfer img (in pixels)
 }
 
 // matrix algebra math utils
@@ -28,14 +28,18 @@ let CV = null,
 	GL = null,
 	CANVASTEXTURE = null,
 	CANVASTEXTURENEEDSUPDATE = false
+
 let PROJMATRIX = null,
 	PROJMATRIXNEEDSUPDATE = true
+
 let VBO_VERTEX = null,
 	VBO_FACES = null,
 	SHADERCANVAS = null
+
 let SHADERVIDEO = null,
 	VIDEOTEXTURE = null,
 	VIDEOTRANSFORMMAT2 = null
+
 let MOVMATRIX = create_mat4Identity(),
 	MOVMATRIXINV = create_mat4Identity()
 
@@ -43,8 +47,13 @@ let ZPLANE = 0,
 	YPLANE = 0
 let ISDETECTED = false
 
+// flags canvas for update on next draw
+function update_canvasTexture() {
+	CANVASTEXTURENEEDSUPDATE = true
+}
+
 // ------------------- BEGIN WEBGL HELPERS
-// TODO: these functions mutate the GL global, but move them to helpers.js file somehow
+// TODO: these functions mutate the GL global, but move them to an external js file somehow - switch to modules?
 // compile a shader:
 function compile_shader(source, glType, typeString) {
 	const glShader = GL.createShader(glType)
@@ -99,9 +108,9 @@ function update_projMatrix() {
 	PROJMATRIXNEEDSUPDATE = false
 } // -------------------- END WEBGL HELPERS
 
-//build the 3D. called once when Jeeliz Face Filter is OK
+// build 3D scene
 function init_scene(spec) {
-	// affect some globalz:
+	// mutate globals
 	GL = spec.GL
 	CV = spec.canvasElement
 	VIDEOTEXTURE = spec.videoTexture
@@ -109,16 +118,15 @@ function init_scene(spec) {
 
 	// create and size the 2D canvas and its drawing context:
 	CANVAS2D = document.createElement('canvas')
-	CANVAS2D.width = SETTINGS.canvasSizePx
+	CANVAS2D.width = SETTINGS.canvasSizeResolution
 	CANVAS2D.height = Math.round(
-		(SETTINGS.canvasSizePx * SETTINGS.scale[1]) / SETTINGS.scale[0]
+		(SETTINGS.canvasSizeResolution * SETTINGS.scale[1]) / SETTINGS.scale[0]
 	)
+
 	CTX = CANVAS2D.getContext('2d')
-	CTX.strokeStyle = SETTINGS.strokeStyle
-	CTX.lineWidth = 4
 
 	const headImage = new Image()
-	headImage.src = 'images/plain-head.png'
+	headImage.src = SETTINGS.headImgSrc
 	headImage.onload = () => {
 		CTX.drawImage(
 			headImage,
@@ -244,10 +252,6 @@ function init_scene(spec) {
 	GL.uniform1i(uSampler, 0)
 	GL.disableVertexAttribArray(shpCanvas, SHADERCANVAS.position)
 	GL.disableVertexAttribArray(shpCanvas, SHADERCANVAS.uv)
-} //end init_scene()
-
-function update_canvasTexture() {
-	CANVASTEXTURENEEDSUPDATE = true
 }
 
 // runs on facefilter initialization
@@ -353,6 +357,12 @@ const callbackTrack = detectState => {
 
 // ~*~*~*~ the entry point ~*~*~*~
 const main = () => {
+
+	// fill viewport of device with canvas
+	const outputCanvas = document.querySelector('#output-canvas')
+	outputCanvas.width = window.innerWidth
+	outputCanvas.height = window.innerHeight
+
 	// initialize jeeliz face filter
 	// options: https://github.com/jeeliz/jeelizFaceFilter#optional-init-arguments
 	JEELIZFACEFILTER.init({
